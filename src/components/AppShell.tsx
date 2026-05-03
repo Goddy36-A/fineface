@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ScanFace, UserPlus, Users, ClipboardList, Menu, X } from "lucide-react";
+import { ScanFace, UserPlus, Users, ClipboardList, Menu, X, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const links = [
   { to: "/", label: "Recognize", icon: ScanFace },
@@ -12,6 +14,8 @@ const links = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
 
   return (
     <div className="min-h-screen">
@@ -43,6 +47,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
+          <div className="hidden md:flex items-center gap-2">
+            {user && (
+              <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground hover:text-foreground">
+                <LogOut className="h-4 w-4 mr-1.5" /> Sign out
+              </Button>
+            )}
+          </div>
           <button onClick={() => setOpen(!open)} className="md:hidden p-2 rounded-lg hover:bg-secondary">
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -55,6 +66,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Icon className="h-4 w-4" /> {label}
               </Link>
             ))}
+            {user && (
+              <button onClick={() => { setOpen(false); signOut(); }} className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm text-muted-foreground">
+                <LogOut className="h-4 w-4" /> Sign out
+              </button>
+            )}
           </div>
         )}
       </header>
