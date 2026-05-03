@@ -14,6 +14,8 @@ const links = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
 
   return (
     <div className="min-h-screen">
