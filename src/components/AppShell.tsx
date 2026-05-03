@@ -66,6 +66,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Icon className="h-4 w-4" /> {label}
               </Link>
             ))}
+            {user && (
+              <button onClick={() => { setOpen(false); signOut(); }} className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm text-muted-foreground">
+                <LogOut className="h-4 w-4" /> Sign out
+              </button>
+            )}
           </div>
         )}
       </header>
