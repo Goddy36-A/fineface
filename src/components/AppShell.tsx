@@ -47,6 +47,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
+          <div className="hidden md:flex items-center gap-2">
+            {user && (
+              <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground hover:text-foreground">
+                <LogOut className="h-4 w-4 mr-1.5" /> Sign out
+              </Button>
+            )}
+          </div>
           <button onClick={() => setOpen(!open)} className="md:hidden p-2 rounded-lg hover:bg-secondary">
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
