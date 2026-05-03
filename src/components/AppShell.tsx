@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ScanFace, UserPlus, Users, ClipboardList, Menu, X } from "lucide-react";
+import { ScanFace, UserPlus, Users, ClipboardList, Menu, X, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const links = [
   { to: "/", label: "Recognize", icon: ScanFace },
