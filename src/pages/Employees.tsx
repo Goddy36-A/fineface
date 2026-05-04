@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Trash2, UserCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { EmployeePhoto } from "@/components/EmployeePhoto";
 
 interface Employee {
   id: string; employee_code: string; full_name: string; email: string | null;
@@ -54,13 +55,16 @@ export default function Employees() {
           {list.map((e) => (
             <Card key={e.id} className="surface border-border p-5 hover:shadow-elegant transition-shadow">
               <div className="flex items-start gap-4">
-                {e.photo_url ? (
-                  <img src={e.photo_url} alt={e.full_name} className="h-16 w-16 rounded-xl object-cover border border-border" />
-                ) : (
-                  <div className="h-16 w-16 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
-                    {e.full_name.split(" ").map(s => s[0]).slice(0,2).join("")}
-                  </div>
-                )}
+                <EmployeePhoto
+                  photoRef={e.photo_url}
+                  alt={e.full_name}
+                  className="h-16 w-16 rounded-xl object-cover border border-border"
+                  fallback={
+                    <div className="h-16 w-16 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
+                      {e.full_name.split(" ").map(s => s[0]).slice(0,2).join("")}
+                    </div>
+                  }
+                />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold truncate">{e.full_name}</div>
                   <div className="text-xs text-muted-foreground">#{e.employee_code}</div>
