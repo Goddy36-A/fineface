@@ -21,9 +21,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       if (s?.user) {
-        setTimeout(() => checkAdmin(s.user.id), 0);
+        setLoading(true);
+        setTimeout(() => {
+          checkAdmin(s.user.id).finally(() => setLoading(false));
+        }, 0);
       } else {
         setIsAdmin(false);
+        setLoading(false);
       }
     });
     supabase.auth.getSession().then(({ data }) => {
@@ -35,7 +39,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function checkAdmin(uid: string) {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", uid)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (error) console.error("checkAdmin error", error);
     setIsAdmin(!!data);
   }
 
