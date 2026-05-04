@@ -6,7 +6,7 @@ import { AppShell } from "./AppShell";
 
 export function ProtectedRoute({ children, requireAdmin = true }: { children: React.ReactNode; requireAdmin?: boolean }) {
   const { session, isAdmin, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Loading…</div>;
   if (!session) return <Navigate to="/auth" replace />;
   if (requireAdmin && !isAdmin) {
     return (
