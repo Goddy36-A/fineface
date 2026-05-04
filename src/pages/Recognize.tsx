@@ -18,7 +18,7 @@ interface Employee {
   employee_code: string;
   department: string | null;
   photo_url: string | null;
-  descriptor: Float32Array;
+  descriptors: Float32Array[];
 }
 
 export default function Recognize() {
@@ -38,12 +38,20 @@ export default function Recognize() {
       await loadFaceModels();
       setModelsReady(true);
       setStatus("Loading employees...");
-      const { data, error } = await supabase.from("employees").select("id, full_name, employee_code, department, photo_url, face_descriptor");
+      const { data, error } = await supabase.from("employees").select("id, full_name, employee_code, department, photo_url, face_descriptor, face_descriptors");
       if (error) { toast.error(error.message); return; }
-      const list: Employee[] = (data ?? []).map((e: any) => ({
-        ...e,
-        descriptor: new Float32Array(e.face_descriptor as number[]),
-      }));
+      const list: Employee[] = (data ?? []).map((e: any) => {
+        const multi = Array.isArray(e.face_descriptors) ? (e.face_descriptors as number[][]) : [];
+        const arrays = multi.length > 0 ? multi : [e.face_descriptor as number[]];
+        return {
+          id: e.id,
+          full_name: e.full_name,
+          employee_code: e.employee_code,
+          department: e.department,
+          photo_url: e.photo_url,
+          descriptors: arrays.filter(Boolean).map((a) => new Float32Array(a)),
+        };
+      });
       setEmployees(list);
       setStatus(list.length ? "Ready — start camera to recognize" : "No employees enrolled yet");
     })();
@@ -63,8 +71,11 @@ export default function Recognize() {
           for (const det of detections) {
             let best: { emp: Employee; dist: number } | null = null;
             for (const emp of employees) {
-              const d = euclideanDistance(det.descriptor, emp.descriptor);
-              if (!best || d < best.dist) best = { emp, dist: d };
+              // Match against the closest of all stored angle samples
+              for (const desc of emp.descriptors) {
+                const d = euclideanDistance(det.descriptor, desc);
+                if (!best || d < best.dist) best = { emp, dist: d };
+              }
             }
             if (best && best.dist < MATCH_THRESHOLD) {
               const conf = Math.max(0, Math.min(1, 1 - best.dist));
