@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, ScanFace } from "lucide-react";
+import { Loader2, ScanFace, Eye, EyeOff } from "lucide-react";
 
 const schema = z.object({
   email: z.string().trim().email().max(255),
