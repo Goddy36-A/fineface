@@ -53,6 +53,7 @@ export type Database = {
           email: string | null
           employee_code: string
           face_descriptor: Json
+          face_descriptors: Json
           full_name: string
           id: string
           photo_url: string | null
@@ -65,6 +66,7 @@ export type Database = {
           email?: string | null
           employee_code: string
           face_descriptor: Json
+          face_descriptors?: Json
           full_name: string
           id?: string
           photo_url?: string | null
@@ -77,6 +79,7 @@ export type Database = {
           email?: string | null
           employee_code?: string
           face_descriptor?: Json
+          face_descriptors?: Json
           full_name?: string
           id?: string
           photo_url?: string | null
