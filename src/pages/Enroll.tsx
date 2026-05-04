@@ -80,7 +80,8 @@ export default function Enroll() {
         const path = `${parsed.data.employee_code}-${Date.now()}.jpg`;
         const { error: upErr } = await supabase.storage.from("employee-photos").upload(path, blob, { contentType: "image/jpeg", upsert: true });
         if (!upErr) {
-          photo_url = supabase.storage.from("employee-photos").getPublicUrl(path).data.publicUrl;
+          // Store the storage path; UI generates signed URLs on demand
+          photo_url = path;
         }
       }
       const { error: insErr } = await supabase.from("employees").insert({
