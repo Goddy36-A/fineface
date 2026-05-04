@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { LogIn, LogOut } from "lucide-react";
+import { EmployeePhoto } from "@/components/EmployeePhoto";
 
 interface Row {
   id: string; log_type: string; confidence: number | null; recognized_at: string;
@@ -38,11 +39,12 @@ export default function Attendance() {
             const isIn = r.log_type === "check_in";
             return (
               <div key={r.id} className="flex items-center gap-4 px-5 py-4 hover:bg-secondary/40 transition-colors">
-                {r.employees?.photo_url ? (
-                  <img src={r.employees.photo_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
-                ) : (
-                  <div className="h-10 w-10 rounded-lg gradient-primary" />
-                )}
+                <EmployeePhoto
+                  photoRef={r.employees?.photo_url}
+                  alt=""
+                  className="h-10 w-10 rounded-lg object-cover"
+                  fallback={<div className="h-10 w-10 rounded-lg gradient-primary" />}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{r.employees?.full_name ?? "Unknown"}</div>
                   <div className="text-xs text-muted-foreground">#{r.employees?.employee_code}</div>
