@@ -79,7 +79,25 @@ export default function Auth() {
           </div>
           <div>
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="mt-1.5 bg-input border-border" />
+            <div className="relative mt-1.5">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="bg-input border-border pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
           <Button type="submit" disabled={busy} size="lg" className="w-full gradient-primary text-primary-foreground">
             {busy ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Please wait</> : mode === "signin" ? "Sign in" : "Create account"}
