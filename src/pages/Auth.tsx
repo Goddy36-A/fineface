@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Navigate, Link } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,53 +22,76 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [authHint, setAuthHint] = useState<string | null>(null);
   const navigate = useNavigate();
+  const normalizedEmail = useMemo(() => email.trim().toLowerCase(), [email]);
 
   if (loading) return null;
   if (session) return <Navigate to="/" replace />;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = schema.safeParse({ email, password });
+    setAuthHint(null);
+    const parsed = schema.safeParse({ email: normalizedEmail, password });
     if (!parsed.success) { toast.error(parsed.error.errors[0].message); return; }
     setBusy(true);
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
-          email, password,
+          email: normalizedEmail, password,
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
         // Try to sign in immediately (works when email auto-confirm is on)
-        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (signInErr) {
           toast.success("Account created. Check your email to confirm, then sign in.");
           setMode("signin");
+          setAuthHint("Your account exists now. If your password still does not work, use Forgot password to set a new one.");
           return;
         }
         toast.success("Account created");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) throw error;
       }
       navigate("/");
     } catch (e: any) {
-      toast.error(e.message ?? "Authentication failed");
+      const message = e?.message ?? "Authentication failed";
+
+      if (message.toLowerCase().includes("invalid login credentials")) {
+        setAuthHint("That email is registered, but this password does not match. Use Forgot password to set a new password.");
+        toast.error("Wrong password for this email");
+        return;
+      }
+
+      if (message.toLowerCase().includes("user already registered")) {
+        setMode("signin");
+        setAuthHint("That email already has an account. Sign in instead, or use Forgot password if you don't remember the password.");
+        toast.error("Account already exists");
+        return;
+      }
+
+      toast.error(message);
     } finally {
       setBusy(false);
     }
   }
 
   async function forgotPassword() {
-    const parsed = schema.shape.email.safeParse(email);
+    const parsed = schema.shape.email.safeParse(normalizedEmail);
     if (!parsed.success) { toast.error("Enter your email above first"); return; }
+    setAuthHint(null);
     setBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setBusy(false);
     if (error) toast.error(error.message);
-    else toast.success("Password reset email sent. Check your inbox.");
+    else {
+      setAuthHint(`Password reset sent to ${normalizedEmail}. Open the newest email and follow the link to choose a new password.`);
+      toast.success("Password reset email sent. Check your inbox.");
+    }
   }
 
   return (
@@ -94,7 +117,7 @@ export default function Auth() {
         <form onSubmit={submit} className="space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1.5 bg-input border-border" />
+            <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1.5 bg-input border-border" />
           </div>
           <div>
             <Label htmlFor="password">Password</Label>
@@ -102,6 +125,7 @@ export default function Auth() {
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -122,6 +146,12 @@ export default function Auth() {
             {busy ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Please wait</> : mode === "signin" ? "Sign in" : "Create account"}
           </Button>
         </form>
+
+        {authHint && (
+          <p className="mt-4 text-sm text-muted-foreground text-center">
+            {authHint}
+          </p>
+        )}
 
         <div className="mt-5 flex flex-col gap-2 items-center">
           <button type="button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="text-sm text-muted-foreground hover:text-foreground">
