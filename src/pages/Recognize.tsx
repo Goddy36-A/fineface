@@ -83,14 +83,24 @@ export default function Recognize() {
               const key = `${best.emp.id}:${logType}`;
               if (!lastLogRef.current[key] || now - lastLogRef.current[key] > COOLDOWN_MS) {
                 lastLogRef.current[key] = now;
-                await supabase.from("attendance_logs").insert({
+                const { error: insErr } = await supabase.from("attendance_logs").insert({
                   employee_id: best.emp.id,
                   log_type: logType,
                   confidence: conf,
                 });
-                setLastMatch({ name: best.emp.full_name, code: best.emp.employee_code, confidence: conf, type: logType, at: new Date() });
-                toast.success(`${logType === "check_in" ? "Checked in" : "Checked out"}: ${best.emp.full_name}`);
-                setStatus(`Matched ${best.emp.full_name}`);
+                if (insErr) {
+                  // Unique violation = already logged today
+                  if ((insErr as any).code === "23505") {
+                    toast.info(`${best.emp.full_name} already ${logType === "check_in" ? "checked in" : "checked out"} today`);
+                    setStatus(`${best.emp.full_name} already logged today`);
+                  } else {
+                    toast.error(insErr.message);
+                  }
+                } else {
+                  setLastMatch({ name: best.emp.full_name, code: best.emp.employee_code, confidence: conf, type: logType, at: new Date() });
+                  toast.success(`${logType === "check_in" ? "Checked in" : "Checked out"}: ${best.emp.full_name}`);
+                  setStatus(`Matched ${best.emp.full_name}`);
+                }
               } else {
                 setStatus(`${best.emp.full_name} (cooldown)`);
               }
