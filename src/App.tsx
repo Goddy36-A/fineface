@@ -10,6 +10,7 @@ import Enroll from "./pages/Enroll";
 import Employees from "./pages/Employees";
 import Attendance from "./pages/Attendance";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<ProtectedRoute><Recognize /></ProtectedRoute>} />
             <Route path="/enroll" element={<ProtectedRoute><Enroll /></ProtectedRoute>} />
             <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />

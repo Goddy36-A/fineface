@@ -39,7 +39,14 @@ export default function Auth() {
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
-        toast.success("Account created. Signing you in...");
+        // Try to sign in immediately (works when email auto-confirm is on)
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInErr) {
+          toast.success("Account created. Check your email to confirm, then sign in.");
+          setMode("signin");
+          return;
+        }
+        toast.success("Account created");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -50,6 +57,18 @@ export default function Auth() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function forgotPassword() {
+    const parsed = schema.shape.email.safeParse(email);
+    if (!parsed.success) { toast.error("Enter your email above first"); return; }
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else toast.success("Password reset email sent. Check your inbox.");
   }
 
   return (
@@ -104,9 +123,16 @@ export default function Auth() {
           </Button>
         </form>
 
-        <button type="button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="mt-5 text-sm text-muted-foreground hover:text-foreground w-full text-center">
-          {mode === "signin" ? "No account? Sign up" : "Already have an account? Sign in"}
-        </button>
+        <div className="mt-5 flex flex-col gap-2 items-center">
+          <button type="button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="text-sm text-muted-foreground hover:text-foreground">
+            {mode === "signin" ? "No account? Sign up" : "Already have an account? Sign in"}
+          </button>
+          {mode === "signin" && (
+            <button type="button" onClick={forgotPassword} disabled={busy} className="text-sm text-primary hover:underline">
+              Forgot password?
+            </button>
+          )}
+        </div>
       </Card>
     </div>
   );
