@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,22 +16,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
+  const resolvedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-      if (s?.user) {
-        setTimeout(() => { checkAdmin(s.user.id); }, 0);
-      } else {
+    mountedRef.current = true;
+
+    const applySession = async (nextSession: Session | null) => {
+      if (!mountedRef.current) return;
+
+      const nextUser = nextSession?.user ?? null;
+      setSession(nextSession);
+
+      if (!nextUser) {
+        resolvedUserIdRef.current = null;
         setIsAdmin(false);
+        setLoading(false);
+        return;
       }
+
+      if (resolvedUserIdRef.current === nextUser.id) {
+        setLoading(false);
+        return;
+      }
+
+      resolvedUserIdRef.current = nextUser.id;
+      setLoading(true);
+      const admin = await checkAdmin(nextUser.id);
+
+      if (!mountedRef.current) return;
+      setIsAdmin(admin);
+      setLoading(false);
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      void applySession(nextSession);
     });
+
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      if (data.session?.user) checkAdmin(data.session.user.id).finally(() => setLoading(false));
-      else setLoading(false);
+      void applySession(data.session);
     });
-    return () => sub.subscription.unsubscribe();
+
+    return () => {
+      mountedRef.current = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   async function checkAdmin(uid: string) {
@@ -42,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("role", "admin")
       .maybeSingle();
     if (error) console.error("checkAdmin error", error);
-    setIsAdmin(!!data);
+    return !!data;
   }
 
   return (

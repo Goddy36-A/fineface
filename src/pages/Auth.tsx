@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -27,8 +27,14 @@ export default function Auth() {
   const navigate = useNavigate();
   const normalizedEmail = useMemo(() => email.trim().toLowerCase(), [email]);
 
+  useEffect(() => {
+    if (session) {
+      navigate("/", { replace: true });
+    }
+  }, [session, navigate]);
+
   if (loading) return null;
-  if (session) return <Navigate to="/" replace />;
+  if (session) return null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -160,11 +166,12 @@ export default function Auth() {
           size="lg"
           disabled={busy}
           onClick={async () => {
+            setAuthHint(null);
             setBusy(true);
             const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
             if (result.error) { toast.error(result.error.message ?? "Google sign-in failed"); setBusy(false); return; }
             if (result.redirected) return;
-            navigate("/");
+            setBusy(false);
           }}
           className="w-full"
         >
