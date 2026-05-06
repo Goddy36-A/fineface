@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -146,6 +147,29 @@ export default function Auth() {
             {busy ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Please wait</> : mode === "signin" ? "Sign in" : "Create account"}
           </Button>
         </form>
+
+        <div className="my-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+            if (result.error) { toast.error(result.error.message ?? "Google sign-in failed"); setBusy(false); return; }
+            if (result.redirected) return;
+            navigate("/");
+          }}
+          className="w-full"
+        >
+          Continue with Google
+        </Button>
 
         {authHint && (
           <p className="mt-4 text-sm text-muted-foreground text-center">
