@@ -28,7 +28,7 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><Recognize /></ProtectedRoute>} />
             <Route path="/enroll" element={<ProtectedRoute><Enroll /></ProtectedRoute>} />
             <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
-            <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
+            <Route path="/attendance" element={<ProtectedRoute requireAdmin={false}><Attendance /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

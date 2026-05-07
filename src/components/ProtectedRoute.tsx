@@ -14,7 +14,8 @@ export function ProtectedRoute({ children, requireAdmin = true }: { children: Re
         <Card className="surface border-border p-10 text-center max-w-md mx-auto mt-12">
           <ShieldAlert className="h-10 w-10 mx-auto text-destructive mb-3" />
           <h2 className="text-xl font-bold mb-1">Admin access required</h2>
-          <p className="text-sm text-muted-foreground">Your account does not have permission to access this module.</p>
+          <p className="text-sm text-muted-foreground mb-4">This module is restricted to administrators. As a client you can browse the attendance timeline.</p>
+          <Navigate to="/attendance" replace />
         </Card>
       </AppShell>
     );

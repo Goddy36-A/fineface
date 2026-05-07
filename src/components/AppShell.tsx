@@ -4,17 +4,21 @@ import { ScanFace, UserPlus, Users, ClipboardList, Menu, X, LogOut } from "lucid
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
-const links = [
+const adminLinks = [
   { to: "/", label: "Recognize", icon: ScanFace },
   { to: "/enroll", label: "Enroll", icon: UserPlus },
   { to: "/employees", label: "Employees", icon: Users },
+  { to: "/attendance", label: "Attendance", icon: ClipboardList },
+];
+const clientLinks = [
   { to: "/attendance", label: "Attendance", icon: ClipboardList },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
+  const links = isAdmin ? adminLinks : clientLinks;
 
 
   return (
