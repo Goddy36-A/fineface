@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ScanFace, UserPlus, Users, ClipboardList, Menu, X, LogOut } from "lucide-react";
+import { ScanFace, UserPlus, Users, ClipboardList, Menu, X, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,7 @@ const adminLinks = [
   { to: "/enroll", label: "Enroll", icon: UserPlus },
   { to: "/employees", label: "Employees", icon: Users },
   { to: "/attendance", label: "Attendance", icon: ClipboardList },
+  { to: "/users", label: "Admins", icon: ShieldCheck },
 ];
 const clientLinks = [
   { to: "/attendance", label: "Attendance", icon: ClipboardList },

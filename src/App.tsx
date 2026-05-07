@@ -9,6 +9,7 @@ import Recognize from "./pages/Recognize";
 import Enroll from "./pages/Enroll";
 import Employees from "./pages/Employees";
 import Attendance from "./pages/Attendance";
+import Users from "./pages/Users";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound.tsx";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/enroll" element={<ProtectedRoute><Enroll /></ProtectedRoute>} />
             <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
             <Route path="/attendance" element={<ProtectedRoute requireAdmin={false}><Attendance /></ProtectedRoute>} />
+            <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
