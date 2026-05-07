@@ -1,0 +1,2 @@
+CREATE POLICY "Authenticated read attendance" ON public.attendance_logs FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Authenticated read employees basic" ON public.employees FOR SELECT TO authenticated USING (true);
