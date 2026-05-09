@@ -168,6 +168,15 @@ export default function Auth() {
           onClick={async () => {
             setAuthHint(null);
             setBusy(true);
+            // On localhost the Lovable proxy doesn't work — call Supabase directly.
+            if (window.location.hostname === "localhost") {
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: { redirectTo: `${window.location.origin}/` },
+              });
+              if (error) { toast.error(error.message ?? "Google sign-in failed"); setBusy(false); }
+              return;
+            }
             const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
             if (result.error) { toast.error(result.error.message ?? "Google sign-in failed"); setBusy(false); return; }
             if (result.redirected) return;
